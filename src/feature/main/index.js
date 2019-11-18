@@ -29,12 +29,13 @@ class MainScreen extends Component {
   }
 
   render() {
+    const { navigation } = this.props
     return (
       <SafeAreaView>
         <View style={styles.body}>
           <Text style={{ fontSize: 30 }}>X O X O X O X O</Text>
           <View style={{ marginVertical: 25, alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => this.setState({ gameMode: 'single' })} style={styles.btn}>
+            <TouchableOpacity onPress={() => navigation.navigate('Board')} style={styles.btn}>
               <Text style={styles.sectionTitle}>Single Player</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ gameMode: 'multi' })} style={styles.btn}>
