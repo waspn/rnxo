@@ -35,10 +35,10 @@ class MainScreen extends Component {
         <View style={styles.body}>
           <Text style={{ fontSize: 30 }}>X O X O X O X O</Text>
           <View style={{ marginVertical: 25, alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Board')} style={styles.btn}>
+            <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: true })} style={styles.btn} >
               <Text style={styles.sectionTitle}>Single Player</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.setState({ gameMode: 'multi' })} style={styles.btn}>
+            <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: false })} style={styles.btn}>
               <Text style={styles.sectionTitle}>2 Players</Text>
             </TouchableOpacity>
           </View>

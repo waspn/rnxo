@@ -1,10 +1,8 @@
 import React, { Component } from 'react'
 import {
   TouchableOpacity,
-  SafeAreaView,
-  Dimensions,
   StyleSheet,
-  FlatList,
+  Modal,
   View,
   Text,
 } from 'react-native';
@@ -16,14 +14,17 @@ class Board extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      result: '',
+      turnCount: 0,
+      showModal: false,
       firstPlayer: true,
       tictacBoard: initialBoard
       // use 0 for initial value in each cell
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    this.checkFormation()
+  componentDidMount() {
+    this.resetBoard()
   }
 
   renderBoard = (data) => {
@@ -56,13 +57,12 @@ class Board extends Component {
     const updateValue = tictacBoard
     updateValue[column][row] = firstPlayer ? 'X' : 'O'
     this.setState({
-      tictacBoard: updateValue,
-      firstPlayer: !this.state.firstPlayer
-    })
+      turnCount: this.state.turnCount + 1,
+      tictacBoard: updateValue
+    }, () => this.checkFormation())
   }
 
-  checkFormation = () => {
-    console.log('checkFormation')
+  checkForWinner = () => {
     const { tictacBoard } = this.state
     for (let i = 0; i < tictacBoard.length; i++) {
       if (
@@ -71,35 +71,73 @@ class Board extends Component {
         tictacBoard[i][0].toString() !== '0'
       ) {
         console.log('HORIZONTAL WIN')
+        return true
       } else if (
         tictacBoard[0][i] === tictacBoard[1][i] &&
         tictacBoard[1][i] === tictacBoard[2][i] &&
         tictacBoard[0][i].toString() !== '0'
       ) {
         console.log('VERTICAL WIN')
+        return true
       }
     }
 
     if (
-      tictacBoard[0][0] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][2] ||
-      tictacBoard[0][2] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][0]
+      (tictacBoard[0][0] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][2] ||
+        tictacBoard[0][2] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][0])
       && tictacBoard[1][1].toString() !== '0'
     ) {
       console.log('DIAGONAL WIN')
+      return true
     }
+  }
+
+  checkFormation = () => {
+    const { firstPlayer, turnCount } = this.state
+    console.log('firstPlayer', firstPlayer)
+    const hasWinner = (turnCount >= 5) && this.checkForWinner()
+    console.log('hasWINNER', hasWinner)
+    if (hasWinner) {
+      this.gameResultSummary('win')
+    } else {
+      turnCount === 9 && this.gameResultSummary('draw')
+      this.setState({ firstPlayer: !this.state.firstPlayer })
+    }
+  }
+
+  gameResultSummary = (result) => {
+    const { firstPlayer } = this.state
+    const { singlePlayer } = this.props.navigation.state.params
+    console.log('singlePlayer', singlePlayer)
+    switch (result) {
+      case 'win': {
+        if (singlePlayer) {
+          result = `YOU ${firstPlayer ? 'WIN' : 'LOSE'}`
+        } else {
+          result = `Player ${firstPlayer ? '1' : '2'} WIN`
+        }
+      } break
+      case 'draw': {
+        result = 'DRAW'
+      } break
+    }
+    this.setState({ result, showModal: true })
   }
 
   resetBoard = () => {
     this.setState({
-      tictacBoard: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-      firstPlayer: true
+      result: '',
+      turnCount: 0,
+      showModal: false,
+      firstPlayer: true,
+      tictacBoard: [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     })
   }
 
   render() {
     const { navigation } = this.props
-    const { tictacBoard } = this.state
-    // console.log('tictacBoard', tictacBoard)
+    const { tictacBoard, showModal, result } = this.state
+    console.log('result', result)
     return (
       <View style={{ flex: 1, justifyContent: 'center', padding: 15, backgroundColor: 'blue' }}>
         <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 40 }}>
@@ -113,6 +151,25 @@ class Board extends Component {
             <Text>EXIT</Text>
           </TouchableOpacity>
         </View>
+        <Modal
+          visible={showModal}
+          transparent={true}
+          animation={'fade'}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{ backgroundColor: 'white', justifyContent: 'space-around', alignItems: 'center', padding: 20, marginHorizontal: 20, flex: 0.2 }}>
+              <Text style={{ fontSize: 25 }}>{result}</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                <TouchableOpacity style={styles.flatBtn} onPress={() => this.resetBoard()}>
+                  <Text>PLAY AGAIN</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flatBtn} onPress={() => navigation.goBack()}>
+                  <Text>EXIT</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     )
   }
