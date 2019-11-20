@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   Dimensions,
   StyleSheet,
+  Image,
   View,
   Text,
 } from 'react-native';
@@ -33,7 +34,7 @@ class MainScreen extends Component {
     return (
       <SafeAreaView>
         <View style={styles.body}>
-          <Text style={{ fontSize: 30 }}>X O X O X O X O</Text>
+          <Image style={{ width: 250, height: 250 }} source={require('../../assets/ttt.png')} />
           <View style={{ marginVertical: 25, alignItems: 'center' }}>
             <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: true })} style={styles.btn} >
               <Text style={styles.sectionTitle}>Single Player</Text>

@@ -3,11 +3,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Image,
   View,
   Text,
 } from 'react-native';
 
-
+const xIcon = require('../../assets/x.png')
+const oIcon = require('../../assets/o.png')
 const initialBoard = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 class Board extends Component {
 
@@ -33,9 +35,9 @@ class Board extends Component {
         <View key={columnIndex} style={{ flexDirection: 'row' }}>
           {
             columnValue.map((rowValue, rowIndex) => (
-              <TouchableOpacity key={rowIndex} disabled={rowValue !== 0} onPress={() => this.selectPosition([columnIndex, rowIndex])}>
-                <View style={{ borderWidth: 2, borderColor: 'black', width: 100, height: 100, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }} >
-                  <Text style={{ fontSize: 40 }}>{rowValue !== 0 && rowValue}</Text>
+              <TouchableOpacity key={rowIndex} activeOpacity={0.8} disabled={rowValue !== 0} onPress={() => this.selectPosition([columnIndex, rowIndex])}>
+                <View style={styles.boardCell} >
+                  <Image style={{ width: 50, height: 50 }} source={rowValue !== 0 && (rowValue === 'X' ? xIcon : oIcon)} />
                 </View>
               </TouchableOpacity>
             ))
@@ -81,13 +83,16 @@ class Board extends Component {
     if (hasWinner) {
       this.gameResultSummary('win')
     } else {
-      turnCount === 9 && this.gameResultSummary('draw')
-      this.setState({ firstPlayer: !this.state.firstPlayer }, () => {
-        // get latest state value
-        if (singlePlayer && !this.state.firstPlayer) {
-          this.handleBotPlay()
-        }
-      })
+      if (turnCount === 9) {
+        this.gameResultSummary('draw')
+      } else {
+        this.setState({ firstPlayer: !this.state.firstPlayer }, () => {
+          // get latest state value
+          if (singlePlayer && !this.state.firstPlayer) {
+            this.handleBotPlay()
+          }
+        })
+      }
     }
   }
 
@@ -152,35 +157,37 @@ class Board extends Component {
 
   render() {
     const { navigation } = this.props
-    const { tictacBoard, showModal, result } = this.state
-    console.log('result', result)
+    const { tictacBoard, showModal, result, firstPlayer } = this.state
+    const boardColor = firstPlayer ? 'lightgreen' : 'crimson'
     return (
-      <View style={{ flex: 1, justifyContent: 'center', padding: 15, backgroundColor: 'blue' }}>
-        <View style={{ flexDirection: 'column', alignItems: 'center', marginBottom: 40 }}>
+      <View style={styles.container}>
+        <Image style={{ width: 120, height: 120 }} source={require('../../assets/ttt.png')} />
+        <View style={{ ...styles.boardContainer, borderColor: boardColor, backgroundColor: boardColor }}>
           {this.renderBoard(tictacBoard)}
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        <View style={{ flexDirection: 'row', alignItems:'center', backgroundColor: 'lightblue', flex: 0.2 }}>
           <TouchableOpacity style={styles.flatBtn} onPress={() => this.resetBoard()}>
-            <Text>RESET</Text>
+            <Text style={styles.btnText}>RESET</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.flatBtn} onPress={() => navigation.goBack()}>
-            <Text>EXIT</Text>
+            <Text style={styles.btnText}>EXIT</Text>
           </TouchableOpacity>
         </View>
+        
         <Modal
           visible={showModal}
           transparent={true}
           animation={'fade'}
         >
-          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-            <View style={{ backgroundColor: 'white', justifyContent: 'space-around', alignItems: 'center', padding: 20, marginHorizontal: 20, flex: 0.2 }}>
-              <Text style={{ fontSize: 25 }}>{result}</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+            <View style={styles.modal}>
+              <Text style={{ fontSize: 35, color: 'white' }}>- {result} -</Text>
+              <View style={{ flexDirection: 'column', justifyContent: 'space-around', marginTop: 35 }}>
                 <TouchableOpacity style={styles.flatBtn} onPress={() => this.resetBoard()}>
-                  <Text>PLAY AGAIN</Text>
+                  <Text style={styles.btnText}>PLAY AGAIN</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flatBtn} onPress={() => navigation.goBack()}>
-                  <Text>EXIT</Text>
+                  <Text style={styles.btnText}>EXIT</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -192,15 +199,44 @@ class Board extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 15
+  },
+  boardContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    bottom: 20,
+    borderWidth: 2,
+  },
+  boardCell: {
+    margin: 2,
+    width: 100,
+    height: 100,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  btnText: {
+    fontSize: 20,
+    color: 'white'
+  },
   flatBtn: {
     height: 35,
-    width: 120,
+    flex: 0.8,
     padding: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'white',
+  },
+  modal: {
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 20,
+    marginHorizontal: 20,
+    flex: 0.2
   }
 })
 
 export default Board
-
