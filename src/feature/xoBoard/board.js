@@ -28,30 +28,24 @@ class Board extends Component {
   }
 
   renderBoard = (data) => {
-    const { firstPlayer } = this.state
-    // console.log('DATAAA', data)
     return data.map((columnValue, columnIndex) => {
-      // console.log('KEY', columnIndex)
       return (
         <View key={columnIndex} style={{ flexDirection: 'row' }}>
           {
-            columnValue.map((rowValue, rowIndex) => {
-              // console.log('rowIndex', rowIndex)
-              return (
-                <TouchableOpacity key={rowIndex} disabled={rowValue !== 0} onPress={() => this.selectPosition([columnIndex, rowIndex])}>
-                  <View style={{ borderWidth: 2, borderColor: 'black', width: 100, height: 100, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }} >
-                    <Text style={{ fontSize: 40 }}>{rowValue !== 0 && rowValue}</Text>
-                  </View>
-                </TouchableOpacity>
-              )
-            })
+            columnValue.map((rowValue, rowIndex) => (
+              <TouchableOpacity key={rowIndex} disabled={rowValue !== 0} onPress={() => this.selectPosition([columnIndex, rowIndex])}>
+                <View style={{ borderWidth: 2, borderColor: 'black', width: 100, height: 100, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }} >
+                  <Text style={{ fontSize: 40 }}>{rowValue !== 0 && rowValue}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
           }
         </View>
       )
     })
   }
 
-  selectPosition = async (position) => {
+  selectPosition = (position) => {
     const [column, row] = position
     const { firstPlayer, tictacBoard } = this.state
     const updateValue = tictacBoard
@@ -60,6 +54,41 @@ class Board extends Component {
       turnCount: this.state.turnCount + 1,
       tictacBoard: updateValue
     }, () => this.checkFormation())
+  }
+
+  checkAvailablePos = () => {
+    const { tictacBoard } = this.state
+    const availablePosition = []
+    tictacBoard.forEach((column, colIndex) => column.forEach((row, rowIndex) => {
+      if (tictacBoard[colIndex][rowIndex] === 0) {
+        availablePosition.push([colIndex, rowIndex])
+      }
+    }))
+    return availablePosition
+  }
+
+  handleBotPlay = () => {
+    const availablePos = this.checkAvailablePos()
+    const selectedPosition = Math.floor(Math.random() * availablePos.length)
+    setTimeout(() => { this.selectPosition(availablePos[selectedPosition]) }, 1000)
+  }
+
+  checkFormation = () => {
+    const { turnCount } = this.state
+    const { singlePlayer } = this.props.navigation.state.params
+    const hasWinner = (turnCount >= 5) && this.checkForWinner()
+
+    if (hasWinner) {
+      this.gameResultSummary('win')
+    } else {
+      turnCount === 9 && this.gameResultSummary('draw')
+      this.setState({ firstPlayer: !this.state.firstPlayer }, () => {
+        // get latest state value
+        if (singlePlayer && !this.state.firstPlayer) {
+          this.handleBotPlay()
+        }
+      })
+    }
   }
 
   checkForWinner = () => {
@@ -89,19 +118,6 @@ class Board extends Component {
     ) {
       console.log('DIAGONAL WIN')
       return true
-    }
-  }
-
-  checkFormation = () => {
-    const { firstPlayer, turnCount } = this.state
-    console.log('firstPlayer', firstPlayer)
-    const hasWinner = (turnCount >= 5) && this.checkForWinner()
-    console.log('hasWINNER', hasWinner)
-    if (hasWinner) {
-      this.gameResultSummary('win')
-    } else {
-      turnCount === 9 && this.gameResultSummary('draw')
-      this.setState({ firstPlayer: !this.state.firstPlayer })
     }
   }
 
