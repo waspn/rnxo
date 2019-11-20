@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {
   TouchableOpacity,
+  SafeAreaView,
   StyleSheet,
   Modal,
   Image,
@@ -37,7 +38,7 @@ class Board extends Component {
             columnValue.map((rowValue, rowIndex) => (
               <TouchableOpacity key={rowIndex} activeOpacity={0.8} disabled={rowValue !== 0} onPress={() => this.selectPosition([columnIndex, rowIndex])}>
                 <View style={styles.boardCell} >
-                  <Image style={{ width: 50, height: 50 }} source={rowValue !== 0 && (rowValue === 'X' ? xIcon : oIcon)} />
+                  {rowValue !== 0 && <Image style={{ width: 50, height: 50 }} source={(rowValue === 'X' ? xIcon : oIcon)} />}
                 </View>
               </TouchableOpacity>
             ))
@@ -160,12 +161,12 @@ class Board extends Component {
     const { tictacBoard, showModal, result, firstPlayer } = this.state
     const boardColor = firstPlayer ? 'lightgreen' : 'crimson'
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Image style={{ width: 120, height: 120 }} source={require('../../assets/ttt.png')} />
         <View style={{ ...styles.boardContainer, borderColor: boardColor, backgroundColor: boardColor }}>
           {this.renderBoard(tictacBoard)}
         </View>
-        <View style={{ flexDirection: 'row', alignItems:'center', backgroundColor: 'lightblue', flex: 0.2 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'lightblue', flex: 0.2 }}>
           <TouchableOpacity style={styles.flatBtn} onPress={() => this.resetBoard()}>
             <Text style={styles.btnText}>RESET</Text>
           </TouchableOpacity>
@@ -173,7 +174,7 @@ class Board extends Component {
             <Text style={styles.btnText}>EXIT</Text>
           </TouchableOpacity>
         </View>
-        
+
         <Modal
           visible={showModal}
           transparent={true}
@@ -193,7 +194,7 @@ class Board extends Component {
             </View>
           </View>
         </Modal>
-      </View>
+      </SafeAreaView>
     )
   }
 }
