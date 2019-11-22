@@ -39,7 +39,7 @@ class MainScreen extends Component {
           <Fragment>
             <Text style={{ fontSize: 30 }}>Select difficulty</Text>
             <View style={{ marginVertical: 15 }} />
-            <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: true, difficult: 'normal' })} style={styles.btn} >
+            <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: true, difficult: 'easy' })} style={styles.btn} >
               <Text style={styles.sectionTitle}>Easy</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('Board', { singlePlayer: true, difficult: 'hard' })} style={styles.btn}>
