@@ -1,4 +1,5 @@
-# rnxo
+# React native TicTacToe
+<img src="src/assets/ttt.png" alt="Tic Tac Toe" width="300"/>
 
 Tic-Tac Toe using React native
 - play with other player
