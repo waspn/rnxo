@@ -74,12 +74,10 @@ class Board extends Component {
     const { tictacBoard } = this.state
     const availablePos = this.checkAvailablePos(tictacBoard)
     if (difficult === 'easy') {
-      console.log('EASY')
       const selectedPosition = Math.floor(Math.random() * availablePos.length)
       setTimeout(() => { this.selectPosition(availablePos[selectedPosition]) }, 500)
     } else {
       const bestPosition = this.miniMax(tictacBoard)
-      console.log('bestPosition', bestPosition)
       setTimeout(() => { this.selectPosition(bestPosition.position) }, 500)
     }
   }
@@ -157,15 +155,12 @@ class Board extends Component {
   }
 
   checkForWinner = (tictacBoard, isPlayer) => {
-    // const { tictacBoard } = this.state
-    // console.log('isPlayer', isPlayer)
     const playerValue = isPlayer ? 'X' : 'O'
     if (
       (tictacBoard[0][0] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][2] ||
         tictacBoard[0][2] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][0])
       && tictacBoard[1][1].toString() === playerValue
     ) {
-      // console.log('diagonal win')
       return true
     } else {
       for (let i = 0; i < tictacBoard.length; i++) {
@@ -174,14 +169,12 @@ class Board extends Component {
           tictacBoard[i][1] === tictacBoard[i][2] &&
           tictacBoard[i][0].toString() === playerValue
         ) {
-          // console.log('horizontal win')
           return true
         } else if (
           tictacBoard[0][i] === tictacBoard[1][i] &&
           tictacBoard[1][i] === tictacBoard[2][i] &&
           tictacBoard[0][i].toString() === playerValue
         ) {
-          // console.log('vertical win')
           return true
         }
       }
@@ -192,7 +185,6 @@ class Board extends Component {
   gameResultSummary = (result) => {
     const { firstPlayer } = this.state
     const { singlePlayer } = this.props.navigation.state.params
-    console.log('singlePlayer', singlePlayer)
     switch (result) {
       case 'win': {
         if (singlePlayer) {
