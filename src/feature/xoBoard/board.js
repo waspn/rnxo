@@ -59,11 +59,10 @@ class Board extends Component {
     }, () => this.checkFormation())
   }
 
-  checkAvailablePos = () => {
-    const { tictacBoard } = this.state
+  checkAvailablePos = (board) => {
     const availablePosition = []
-    tictacBoard.forEach((column, colIndex) => column.forEach((row, rowIndex) => {
-      if (tictacBoard[colIndex][rowIndex] === 0) {
+    board.forEach((column, colIndex) => column.forEach((row, rowIndex) => {
+      if (board[colIndex][rowIndex] === 0) {
         availablePosition.push([colIndex, rowIndex])
       }
     }))
@@ -71,15 +70,75 @@ class Board extends Component {
   }
 
   handleBotPlay = () => {
-    const availablePos = this.checkAvailablePos()
-    const selectedPosition = Math.floor(Math.random() * availablePos.length)
-    setTimeout(() => { this.selectPosition(availablePos[selectedPosition]) }, 1000)
+    const { difficult } = this.props.navigation.state.params
+    const { tictacBoard } = this.state
+    const availablePos = this.checkAvailablePos(tictacBoard)
+    if (difficult === 'easy') {
+      console.log('EASY')
+      const selectedPosition = Math.floor(Math.random() * availablePos.length)
+      setTimeout(() => { this.selectPosition(availablePos[selectedPosition]) }, 500)
+    } else {
+      const bestPosition = this.miniMax(tictacBoard)
+      console.log('bestPosition', bestPosition)
+      setTimeout(() => { this.selectPosition(bestPosition.position) }, 500)
+    }
+  }
+
+  miniMax = (board, isPlayer = false) => {
+    // hard bot using 'minimax' algorithm see => https://www.freecodecamp.org/news/how-to-make-your-tic-tac-toe-game-unbeatable-by-using-the-minimax-algorithm-9d690bad4b37/
+    // implement base on this code => https://github.com/ahmadabdolsaheb/minimaxarticle/blob/master/index.js
+
+    const availablePos = this.checkAvailablePos(board)
+    // collect score for each win to find best position
+    if (this.checkForWinner(board, true)) {
+      return { score: -10 }
+    } else if (this.checkForWinner(board, false)) {
+      return { score: 10 }
+    } else if (availablePos.length === 0) {
+      return { score: 0 }
+    }
+
+    const allPossiblePos = []
+    const pos = {}
+
+    availablePos.forEach((position) => {
+      const [column, row] = position
+      pos.position = [column, row]
+      board[column][row] = isPlayer ? 'X' : 'O'
+
+      const result = this.miniMax(board, !isPlayer)
+      pos.score = result.score
+
+      // update new available position for check minimax again
+      board[column][row] = 0
+      allPossiblePos.push(pos)
+    })
+
+    // check score to find best position
+    let bestScore = 0
+    let bestPosition = 0
+    if (isPlayer) {
+      allPossiblePos.forEach((pos, posIndex) => {
+        if (pos.score < bestScore) {
+          bestScore = pos.score
+          bestPosition = posIndex
+        }
+      })
+    } else {
+      allPossiblePos.forEach((pos, posIndex) => {
+        if (pos.score > bestScore) {
+          bestScore = pos.score
+          bestPosition = posIndex
+        }
+      })
+    }
+    return allPossiblePos[bestPosition]
   }
 
   checkFormation = () => {
-    const { turnCount } = this.state
+    const { tictacBoard, turnCount, firstPlayer } = this.state
     const { singlePlayer } = this.props.navigation.state.params
-    const hasWinner = (turnCount >= 5) && this.checkForWinner()
+    const hasWinner = (turnCount >= 5) && this.checkForWinner(tictacBoard, firstPlayer)
 
     if (hasWinner) {
       this.gameResultSummary('win')
@@ -97,34 +156,37 @@ class Board extends Component {
     }
   }
 
-  checkForWinner = () => {
-    const { tictacBoard } = this.state
-    for (let i = 0; i < tictacBoard.length; i++) {
-      if (
-        tictacBoard[i][0] === tictacBoard[i][1] &&
-        tictacBoard[i][1] === tictacBoard[i][2] &&
-        tictacBoard[i][0].toString() !== '0'
-      ) {
-        console.log('HORIZONTAL WIN')
-        return true
-      } else if (
-        tictacBoard[0][i] === tictacBoard[1][i] &&
-        tictacBoard[1][i] === tictacBoard[2][i] &&
-        tictacBoard[0][i].toString() !== '0'
-      ) {
-        console.log('VERTICAL WIN')
-        return true
-      }
-    }
-
+  checkForWinner = (tictacBoard, isPlayer) => {
+    // const { tictacBoard } = this.state
+    // console.log('isPlayer', isPlayer)
+    const playerValue = isPlayer ? 'X' : 'O'
     if (
       (tictacBoard[0][0] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][2] ||
         tictacBoard[0][2] === tictacBoard[1][1] && tictacBoard[1][1] === tictacBoard[2][0])
-      && tictacBoard[1][1].toString() !== '0'
+      && tictacBoard[1][1].toString() === playerValue
     ) {
-      console.log('DIAGONAL WIN')
+      // console.log('diagonal win')
       return true
+    } else {
+      for (let i = 0; i < tictacBoard.length; i++) {
+        if (
+          tictacBoard[i][0] === tictacBoard[i][1] &&
+          tictacBoard[i][1] === tictacBoard[i][2] &&
+          tictacBoard[i][0].toString() === playerValue
+        ) {
+          // console.log('horizontal win')
+          return true
+        } else if (
+          tictacBoard[0][i] === tictacBoard[1][i] &&
+          tictacBoard[1][i] === tictacBoard[2][i] &&
+          tictacBoard[0][i].toString() === playerValue
+        ) {
+          // console.log('vertical win')
+          return true
+        }
+      }
     }
+    return false
   }
 
   gameResultSummary = (result) => {
@@ -147,13 +209,17 @@ class Board extends Component {
   }
 
   resetBoard = () => {
+    const { difficult } = this.props.navigation.state.params
+    const isHardMode = (difficult === 'hard')
     this.setState({
       result: '',
       turnCount: 0,
       showModal: false,
-      firstPlayer: true,
+      firstPlayer: !isHardMode,
       tictacBoard: [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    })
+    }, () => {
+      isHardMode && this.handleBotPlay()
+    })    
   }
 
   render() {
